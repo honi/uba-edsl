@@ -3,10 +3,15 @@
 {-
 Deep embedding bien tipado utilizando GADTs.
 
-Los GADTs nos permiten especializar la variable de tipo `a` en cada constructor
-del tipo Expr a. De esta forma restringimos qué valores podemos pasarle a los
-constructores (por ejemplo Val solo acepta un Int), pero también codificamos en
-el tipo de la expresión qué tipo de valor tenemos "adentro".
+A diferencia de implementación que usa un phantom type y smart constructors, los
+GADTs nos permiten especializar la variable de tipo `a` en cada constructor del
+tipo Expr a. De esta forma restringimos qué valores podemos pasarle a los
+constructores (por ejemplo Val solo acepta un Int), y además codificamos
+correctamente en el tipo de la expresión qué tipo de valor tenemos "adentro".
+Ya no sucede lo que pasaba con los smart constructors que solo restringían los
+tipos en la creación de las expresiones pero todas terminaban teniendo el tipo
+`Expra a` sin especializar la `a` (y consecuentemente no podíamos inferir
+correctamente el tipo de retorno del evaluador.).
 
 Es decir, si la expresión contiene un valor Int va a ser del tipo Expr Int.
 Análogamente si contiene un valor Bool va a ser del tipo Expr Bool. Estos
