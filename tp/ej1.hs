@@ -1,4 +1,4 @@
-import Data.Kind
+{-# OPTIONS_GHC -Wno-star-is-type #-}
 
 {-
 Shallow embedding bien tipado usando enfoque tagless-final.
@@ -11,7 +11,7 @@ primer * del tipo de `e` para restringir los términos válidos del EDSL.
 import qualified Prelude    -- Para poder usar Prelude.not.
 import Prelude hiding (not, and, or)
 
-class Expr (e :: Type -> Type) where
+class Expr (e :: * -> *) where
     val :: Int -> e Int
     eq  :: e Int -> e Int -> e Bool
     lt  :: e Int -> e Int -> e Bool
