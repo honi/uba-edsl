@@ -1,15 +1,17 @@
+import Data.Kind
+
 {-
-Shallow embedding bien tipado usando tagless-final.
+Shallow embedding bien tipado usando enfoque tagless-final.
 
 Especificamos el EDSL como funciones en el typeclass `Expr e`. Éstas funciones
-operan con el tipo `e` que tiene kind * -> *, permitiendo especializar la
-primer variable del tipo de `e` para restringir los términos válidos del EDSL.
+operan con el tipo `e` que tiene kind * -> * permitiendo especializar el
+primer * del tipo de `e` para restringir los términos válidos del EDSL.
 -}
 
-import qualified Prelude
+import qualified Prelude    -- Para poder usar Prelude.not.
 import Prelude hiding (not, and, or)
 
-class Expr e where
+class Expr (e :: Type -> Type) where
     val :: Int -> e Int
     eq  :: e Int -> e Int -> e Bool
     lt  :: e Int -> e Int -> e Bool
@@ -19,19 +21,18 @@ class Expr e where
 
 {-
 Para dar la semántica del EDSL, creamos un nuevo tipo concreto y definimos su
-instancia para el typeclass `Expr`. Los tipos definidos para las funciones del
-EDSL en la clase `Expr` nos permiten apoyarnos en el typechecker de Haskell
-para garantizar que los términos se construyen con valores bien tipados (val
-solo puede recibir un `E Int`, mientras que not solo puede recibir `E Bool`).
-
-Notar que las expresiones resultan siempre "wrapeadas" con el constructor `E`,
-y cada "constructor" del EDSL (val, eq, lt, etc) no construyen un AST sino que
-(en esta instancia para Eval), ya interpretan la expresión y el valor resultante
-de la expresión es su evaluación.
+instancia para el typeclass `Expr`.
 -}
 
 data Eval e = E e
     deriving Show
+
+{-
+Los tipos de las funciones de la clase `Expr` nos permiten apoyarnos en el
+typechecker de Haskell para garantizar que los términos se construyen con
+valores bien tipados (`val` solo puede recibir un `E Int`, mientras que `not`
+solo puede recibir `E Bool`).
+-}
 
 instance Expr Eval where
     val x = E x
@@ -42,14 +43,14 @@ instance Expr Eval where
     or (E p) (E q) = E (p || q)
 
 {-
-El shallow embedding define la semántica como una instancia del typeclass
-`Expr e`. Esto significa que si queremos dar otra interpretación al EDSL,
-por ejemplo para un pretty print de la expresón, necesitamos definir un nuevo
-tipo `Print e` para modificar la implementación de la instancia de `Expr e`.
+El shallow embedding define la semántica como una instancia de la clase `Expr`.
+Esto significa que si queremos dar otra interpretación al EDSL, por ejemplo
+para un pretty print de la expresón, necesitamos definir un nuevo tipo `Print e`
+para luego definir una nueva instancia de la clase `Expr`.
 
-A diferencia del deep embedding, las expresiones no construyen un AST. En
-cambio, cada constructor del EDSL mapea a la función correspondiente definida en
-la instancia del typeclass `Expr e` del tipo asignado a la expresión.
+A diferencia del deep embedding, las expresiones del EDSL no construyen un AST.
+En cambio, cada término del EDSL mapea a la función correspondiente definida en
+la instancia de la clase `Expr` para el tipo asignado a la expresión.
 
 Esto resulta interesante ya que al construir una expresión aún no hemos hecho
 ningún trabajo, ninguna computación. Recién al darle un tipo concreto a la
