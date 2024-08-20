@@ -36,6 +36,7 @@ data Expr a where
 deriving instance Show (Expr a)
 
 -- Evaluador de expresiones.
+
 eval :: Expr a -> a
 eval (Val n) = n
 eval (Eq e1 e2) = eval e1 == eval e2
@@ -45,6 +46,7 @@ eval (And e1 e2) = eval e1 && eval e2
 eval (Or e1 e2) = eval e1 || eval e2
 
 -- Pretty print de una expresión.
+
 printExpr :: Expr a -> String
 printExpr (Val n) = show n
 printExpr (Eq e1 e2) = "(" ++ printExpr e1 ++ " == " ++ printExpr e2 ++ ")"
@@ -54,6 +56,7 @@ printExpr (And e1 e2) = "(" ++ printExpr e1 ++ " && " ++ printExpr e2 ++ ")"
 printExpr (Or e1 e2) = "(" ++ printExpr e1 ++ " || " ++ printExpr e2 ++ ")"
 
 -- Algunas expresiones de ejemplo para probar.
+
 e1 = Val 42 :: Expr Int
 e2 = Eq (Val 1) (Val 42) :: Expr Bool
 e3 = Lt (Val 1) (Val 42) :: Expr Bool
