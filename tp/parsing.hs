@@ -6,7 +6,7 @@ import GHC.Base hiding ((<|>))
 
 -- | Parser type
 
-newtype Parser a = P {runP :: String -> [(a,String)]}
+newtype Parser a = P {runP :: String -> [(a, String)]}
 
 instance Functor Parser where
     fmap f p = P $ \cs -> [(f a, cs') | (a, cs') <- runP p cs]

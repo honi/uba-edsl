@@ -5,6 +5,20 @@ import Control.Monad
 pToken :: String -> Parser String
 pToken t = mapM pSat (map (==) t)
 
+pOpen :: Parser Char
+pOpen = pSym '('
+
+pClose :: Parser Char
+pClose = pSym ')'
+
+{-
+Me gustaría poder ignorar el whitespace de manera "automática".
+No quiero tener que intercalar pWhitespace entre cada parser.
+Lo dejo para explorar más adelante.
+-}
+pWhitespace :: Parser String
+pWhitespace = pList (pSym ' ')
+
 {-
 prop ::= term "\/" prop | term
 term ::= factor "/\" term | factor
@@ -63,32 +77,32 @@ pNot = do
     p <- prop
     return (Not p)
 
--- pParen = ((\_ p _ -> Paren p) <$> pSym '(' <*> prop <*> pSym ')')
+-- pParen = ((\_ p _ -> Paren p) <$> pOpen <*> prop <*> pClose)
 pParen :: Parser UProp
 pParen = do
-    pSym '('
+    pOpen
     p <- prop
-    pSym ')'
+    pClose
     return (Paren p)
 
--- pEq = ((\_ p _ q _ -> Eq p q) <$> pSym '(' <*> prop <*> pSym '=' <*> prop <*> pSym ')')
+-- pEq = ((\_ p _ q _ -> Eq p q) <$> pOpen <*> prop <*> pSym '=' <*> prop <*> pClose)
 pEq :: Parser UProp
 pEq = do
-    pSym '('
+    pOpen
     p <- prop
     pSym '='
     q <- prop
-    pSym ')'
+    pClose
     return (Eq p q)
 
--- pLt = ((\_ p _ q _ -> Lt p q) <$> pSym '(' <*> prop <*> pSym '<' <*> prop <*> pSym ')')
+-- pLt = ((\_ p _ q _ -> Lt p q) <$> pOpen <*> prop <*> pSym '<' <*> prop <*> pClose)
 pLt :: Parser UProp
 pLt = do
-    pSym '('
+    pOpen
     p <- prop
     pSym '<'
     q <- prop
-    pSym ')'
+    pClose
     return (Lt p q)
 
 -- pN = ((\n -> N n) <$> number)
@@ -96,6 +110,13 @@ pN :: Parser UProp
 pN = do
     n <- number
     return (N n)
+
+{-
+Entrypoint al parser.
+-}
+
+parseExpr :: String -> [(UProp, String)]
+parseExpr = runP prop
 
 {-
 Algunas expresiones de ejemplo para probar.
@@ -110,7 +131,7 @@ e6 = e2 ++ "\\/" ++ e4
 e7 = "(1<(42))"
 
 testParser :: String -> UProp -> Bool
-testParser input expected = case runP prop input of
+testParser input expected = case parseExpr input of
     []            -> False
     (output, r):_ -> output == expected && r == ""
 
