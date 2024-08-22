@@ -5,11 +5,21 @@ import Control.Monad
 pToken :: String -> Parser String
 pToken t = mapM pSat (map (==) t)
 
-pOpen :: Parser Char
-pOpen = pSym '('
+-- Corre el parser p encerrado en paréntesis.
+parenthesis :: Parser a -> Parser a
+parenthesis p = do
+    pSym '('
+    x <- p
+    pSym ')'
+    return x
 
-pClose :: Parser Char
-pClose = pSym ')'
+-- Simplifica el parseo de una expresión binaria.
+binary :: (UProp -> UProp -> UProp)     -- Constructor binario de UProp.
+       -> Parser UProp                  -- Parser de la izquierda.
+       -> String                        -- Token del medio.
+       -> Parser UProp                  -- Parser de la derecha.
+       -> Parser UProp
+binary f p1 c p2 = (\x1 _ x2 -> f x1 x2) <$> p1 <*> pToken c <*> p2
 
 {-
 Me gustaría poder ignorar el whitespace de manera "automática".
@@ -50,66 +60,28 @@ factor = pNot <|> pParen <|> pEq <|> pLt <|> pN
 
 {-
 Definimos los parsers que se corresponden con cada producción de la gramática.
-Dejo comentadas las versiones one liner sin el do notation. Probé las 2 formas
-pero todavía no sé cuál es más elegante.
 -}
 
--- pOr = (\t _ p -> Or t p) <$> term <*> pToken "\\/" <*> prop
 pOr :: Parser UProp
-pOr = do
-    t <- term
-    pToken "\\/"
-    p <- prop
-    return (Or t p)
+pOr = binary Or term "\\/" prop
 
--- pAnd = ((\f _ t -> And f t) <$> factor <*> pToken "/\\" <*> term)
 pAnd :: Parser UProp
-pAnd = do
-    f <- factor
-    pToken "/\\"
-    t <- term
-    return (And f t)
+pAnd = binary And factor "/\\" term
 
--- pNot = ((\_ p -> Not p) <$> pSym '~' <*> prop)
 pNot :: Parser UProp
-pNot = do
-    pSym '~'
-    p <- prop
-    return (Not p)
+pNot = const Not <$> pSym '~' <*> prop
 
--- pParen = ((\_ p _ -> Paren p) <$> pOpen <*> prop <*> pClose)
 pParen :: Parser UProp
-pParen = do
-    pOpen
-    p <- prop
-    pClose
-    return (Paren p)
+pParen = parenthesis (Paren <$> prop)
 
--- pEq = ((\_ p _ q _ -> Eq p q) <$> pOpen <*> prop <*> pSym '=' <*> prop <*> pClose)
 pEq :: Parser UProp
-pEq = do
-    pOpen
-    p <- prop
-    pSym '='
-    q <- prop
-    pClose
-    return (Eq p q)
+pEq = parenthesis (binary Eq prop "=" prop)
 
--- pLt = ((\_ p _ q _ -> Lt p q) <$> pOpen <*> prop <*> pSym '<' <*> prop <*> pClose)
 pLt :: Parser UProp
-pLt = do
-    pOpen
-    p <- prop
-    pSym '<'
-    q <- prop
-    pClose
-    return (Lt p q)
+pLt = parenthesis (binary Lt prop "<" prop)
 
--- pN = ((\n -> N n) <$> number)
 pN :: Parser UProp
-pN = do
-    n <- number
-    return (N n)
+pN = N <$> number
 
 {-
 Entrypoint al parser.
