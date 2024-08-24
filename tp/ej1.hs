@@ -5,7 +5,8 @@ Shallow embedding bien tipado usando enfoque tagless-final.
 
 Especificamos el EDSL como funciones en el typeclass `Expr e`. Éstas funciones
 operan con el tipo `e` que tiene kind * -> * permitiendo especializar el
-primer * del tipo de `e` para restringir los términos válidos del EDSL.
+primer * del tipo `e` para codificar en el tipo de la expresión cuál es el tipo
+primitivo de Haskell "embebido" adentro de la expresión (Int o Bool).
 -}
 
 import qualified Prelude    -- Para poder usar Prelude.not.
@@ -100,23 +101,25 @@ Para reducir estas expresiones necesitamos forzarles el tipo apropiado según
 la interpretación que queremos. `Eval e` para evaluar, `Print e` para imprimir.
 -}
 
-eval1 = e1 :: Eval Int
-print1 = e1 :: Print Int
+evalInt :: Eval Int -> Int
+evalInt (E n) = n
 
-eval2 = e2 :: Eval Bool
-print2 = e2 :: Print Bool
+evalBool :: Eval Bool -> Bool
+evalBool (E b) = b
 
-eval3 = e3 :: Eval Bool
-print3 = e3 :: Print Bool
+printInt :: Print Int -> String
+printInt (P n) = n
 
-eval4 = e4 :: Eval Bool
-print4 = e4 :: Print Bool
+printBool :: Print Bool -> String
+printBool (P b) = b
 
-eval5 = e5 :: Eval Bool
-print5 = e5 :: Print Bool
-
-eval6 = e6 :: Eval Bool
-print6 = e6 :: Print Bool
+test :: Bool
+test = evalInt  e1 == 42
+    && evalBool e2 == False
+    && evalBool e3 == True
+    && evalBool e4 == True
+    && evalBool e5 == False
+    && evalBool e6 == True
 
 {-
 Ejemplos del typechecker en acción. Estas expresiones no tipan.
