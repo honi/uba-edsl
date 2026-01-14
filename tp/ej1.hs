@@ -1,4 +1,14 @@
+{-
+Ciencias de la Computación - FCEN - UBA
+ECI 2024
+
+Jonathan Bekenstein
+jbekenstein@dc.uba.ar
+LU 348/11
+-}
+
 {-# OPTIONS_GHC -Wno-star-is-type #-}
+module Ej1 where
 
 {-
 Shallow embedding bien tipado usando enfoque tagless-final.

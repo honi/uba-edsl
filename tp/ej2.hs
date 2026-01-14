@@ -1,4 +1,14 @@
+{-
+Ciencias de la Computación - FCEN - UBA
+ECI 2024
+
+Jonathan Bekenstein
+jbekenstein@dc.uba.ar
+LU 348/11
+-}
+
 {-# LANGUAGE GADTs #-}
+module Ej2 where
 
 {-
 Deep embedding bien tipado utilizando GADTs.

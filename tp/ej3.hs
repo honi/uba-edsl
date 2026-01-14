@@ -1,3 +1,13 @@
+{-
+Ciencias de la Computación - FCEN - UBA
+ECI 2024
+
+Jonathan Bekenstein
+jbekenstein@dc.uba.ar
+LU 348/11
+-}
+
+module Ej3 where
 import Parsing
 import Control.Monad
 
